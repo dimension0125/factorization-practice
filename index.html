@@ -2,181 +2,207 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>인수분해 마스터 :: 해커 에디션</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>인수분해 매직 랜드 (Factorization Magic Land)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-color: #050505;
-            --card-bg: #0a0e17;
-            --neon-green: #00ff41;
-            --neon-blue: #00e5ff;
-            --neon-red: #ff2a2a;
-            --text-main: #e0e6ed;
-            --border-color: #1a2332;
+            --bg-color: #0d0a21; 
+            --ticket-bg: rgba(255, 255, 255, 0.9); 
+            --text-dark: #2c3e50;
+            --text-magic: #6a1b9a; 
+            --neon-pink: #ff1a7e;
+            --neon-cyan: #00e5ff;
+            --neon-yellow: #ffea00;
         }
 
         body { 
-            font-family: 'Noto Sans KR', sans-serif; 
-            background-color: var(--bg-color); 
-            background-image: 
-                radial-gradient(circle at 50% 50%, rgba(0, 255, 65, 0.05) 0%, transparent 60%),
-                linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
-            background-size: 100vw 100vh, 30px 30px, 30px 30px;
-            color: var(--text-main);
+            font-family: 'Pretendard', sans-serif; 
+            background: 
+                linear-gradient(rgba(13, 10, 33, 0.6) 0%, rgba(13, 10, 33, 0.8) 100%),
+                url('bg_amusement_park.png') no-repeat center center fixed;
+            background-size: cover;
+            color: #ffffff;
             display: flex; justify-content: center; align-items: center; 
-            height: 100vh; margin: 0; 
-            overflow: hidden;
+            
+            /* [수정됨] 화면이 작아도 잘리지 않게 설정 */
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 40px 20px; /* 위아래 여백 추가 */
+            box-sizing: border-box;
+            overflow-y: auto; /* 짤리면 스크롤 가능하게 변경! */
         }
         
         .container {
             position: relative;
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
         }
 
-        /* 화면 전환용 클래스 */
+        /* 메인 UI 카드 */
         .screen {
-            display: none;
-            background: var(--card-bg); 
-            border: 1px solid var(--border-color);
+            background: var(--ticket-bg); 
+            backdrop-filter: blur(8px);
+            border: 3px solid #f8f9fa;
             padding: 50px 40px; 
-            border-radius: 12px; 
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1), inset 0 0 10px rgba(0, 255, 65, 0.05); 
+            border-radius: 30px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3); 
             text-align: center;
-            animation: glitch-in 0.3s ease-out forwards;
-        }
-        .screen.active {
-            display: block;
+            animation: bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            position: relative;
         }
 
-        @keyframes glitch-in {
-            0% { opacity: 0; transform: scale(0.98) translateY(10px); filter: brightness(2); }
-            100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
+        /* [수정됨] 처음에는 게임 화면 숨기기 */
+        #game-screen {
+            display: none;
         }
 
-        .title {
-            font-family: 'Fira Code', monospace;
-            color: var(--neon-green);
-            font-weight: 700;
+        .screen::before, .screen::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: var(--bg-color);
+            border-radius: 50%;
+        }
+        .screen::before { top: -15px; left: -15px; }
+        .screen::after { top: -15px; right: -15px; }
+
+        @keyframes bounce-in {
+            0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .main-title {
+            font-family: 'Poppins', 'Pretendard', sans-serif;
+            color: var(--text-magic);
+            font-weight: 800;
             margin-top: 0;
-            margin-bottom: 30px;
-            font-size: 1.5rem;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
             letter-spacing: 1px;
             text-transform: uppercase;
-            text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.1);
         }
-        .title::before { content: "> root@math:~# "; color: #888; }
-        .title::after { content: "_"; animation: blink 1s infinite; }
         
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-        /* 난이도 버튼 */
-        .mode-btn {
-            display: block; width: 100%; margin-bottom: 15px;
-            background: transparent;
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 18px; font-size: 1.2rem; font-weight: 700;
-            border-radius: 8px; cursor: pointer; transition: all 0.2s;
-            font-family: 'Fira Code', 'Noto Sans KR', monospace;
-            position: relative;
-            overflow: hidden;
+        /* 5단계 난이도 버튼 */
+        .mode-btn-container {
+            display: flex; flex-direction: column; gap: 12px;
         }
-        .mode-btn:hover { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
-        .mode-btn.easy:hover { color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); }
-        .mode-btn.hard:hover { color: var(--neon-red); border-color: var(--neon-red); box-shadow: 0 0 15px rgba(255, 42, 42, 0.2); }
+        .mode-btn {
+            background: white;
+            color: var(--text-dark);
+            border: 2px solid #e0e0e0;
+            padding: 16px; font-size: 1.2rem; font-weight: 700;
+            border-radius: 15px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .mode-btn.easy { border-color: #81c784; color: #1b5e20; }
+        .mode-btn.normal { border-color: #64b5f6; color: #1565c0; }
+        .mode-btn.hard { border-color: #ffb74d; color: #e65100; }
+        .mode-btn.master { border-color: #ff8a80; color: #c62828; }
+        .mode-btn.grandmaster { 
+            background: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-cyan) 100%); 
+            color: white; border-color: white; 
+        }
 
+        .mode-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        
         /* 수식 영역 */
         #problem { 
-            font-family: 'Fira Code', monospace;
+            font-family: 'Times New Roman', serif;
             font-size: 3.5rem; 
             font-weight: 700; 
             color: #ffffff; 
-            margin: 40px 0; 
+            margin: 30px 0; 
             min-height: 100px; 
             display: flex; align-items: center; justify-content: center; 
-            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            background: rgba(13, 10, 33, 0.7);
+            border-radius: 20px; padding: 20px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.4);
         }
+        #problem:before, #problem:after { content: '🎪'; font-size: 1.5rem; opacity: 0.5; margin: 0 15px; }
 
         .controls { 
             display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
             margin-bottom: 20px;
         }
 
-        button { font-family: 'Fira Code', 'Noto Sans KR', monospace; }
-
         .btn-next { 
-            background: rgba(0, 255, 65, 0.1); 
-            color: var(--neon-green); 
-            border: 1px solid var(--neon-green);
-            padding: 15px; font-size: 1.1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            background: linear-gradient(135deg, #ff1a7e 0%, #ff5c97 100%); 
+            color: white; border: none;
+            padding: 16px; font-size: 1.2rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: 0.2s;
         }
-        .btn-next:hover { background: var(--neon-green); color: var(--bg-color); box-shadow: 0 0 15px rgba(0, 255, 65, 0.4); }
+        .btn-next:hover { transform: translateY(-3px); box-shadow: 0 0 15px rgba(255, 26, 126, 0.3); }
 
         .btn-answer { 
-            background: transparent; color: #8b9bb4; border: 1px solid #2a3441;
-            padding: 15px; font-size: 1.1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            background: white; color: var(--text-magic); border: 2px solid #c5cae9;
+            padding: 16px; font-size: 1.2rem; font-weight: 700; border-radius: 12px; cursor: pointer; transition: 0.2s;
         }
-        .btn-answer:hover { border-color: var(--neon-blue); color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+        .btn-answer:hover { background: #f8f9fa; transform: translateY(-3px); border-color: #c5cae9; }
 
-        /* 뒤로가기 (메인 메뉴) */
+        /* 뒤로가기 버튼 */
         .btn-back {
-            background: none; border: none; color: #666; font-size: 0.9rem;
-            cursor: pointer; position: absolute; top: 15px; right: 20px;
-            transition: color 0.2s;
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); 
+            color: white; font-size: 0.9rem; padding: 8px 15px; border-radius: 20px;
+            cursor: pointer; position: absolute; top: -45px; right: 0;
+            transition: all 0.2s; font-weight: 700; backdrop-filter: blur(4px);
         }
-        .btn-back:hover { color: var(--neon-red); }
+        .btn-back:hover { background: var(--neon-pink); border-color: var(--neon-pink); }
 
         /* 정답 영역 */
         #answer-area { 
-            margin-top: 20px; border-top: 1px dashed var(--border-color); padding-top: 30px; 
+            margin-top: 20px; border-top: 2px dashed #e0e0e0; padding-top: 25px; 
+            background: white; border-radius: 20px; padding: 20px;
             opacity: 0; transform: translateY(10px); transition: all 0.3s ease;
-            pointer-events: none;
+            display: none; /* 공간 차지 방지 */
         }
-        #answer-area.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        #answer-area.show { opacity: 1; transform: translateY(0); display: block; }
 
         #type-text { 
-            display: inline-block; padding: 4px 12px; 
-            background: rgba(0, 229, 255, 0.1); border: 1px solid var(--neon-blue);
-            color: var(--neon-blue); border-radius: 4px; font-size: 0.85rem; margin-bottom: 15px; 
-            text-transform: uppercase; letter-spacing: 1px;
+            display: inline-block; padding: 6px 14px; 
+            background: #e8eaf6; color: var(--text-magic); border-radius: 20px; font-size: 0.9rem; margin-bottom: 10px; font-weight: 700; 
         }
         
         #answer-display { 
-            font-family: 'Fira Code', monospace;
-            font-size: 2.5rem; color: var(--neon-green); font-weight: 700; 
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+            font-family: 'Times New Roman', serif;
+            font-size: 2.5rem; color: #e91e63; font-weight: 700; 
         }
         
-        .note { color: var(--neon-red); font-size: 0.85rem; margin-top: 15px; opacity: 0.8; }
+        .note { color: var(--neon-pink); font-size: 0.85rem; margin-top: 15px; font-weight: 600; text-align: left; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="start-screen" class="screen active">
-        <div class="title">run init_mode.sh</div>
-        <p style="color: #8b9bb4; margin-bottom: 30px;">Select difficulty level to proceed:</p>
-        <button class="mode-btn easy" onclick="startGame('easy')">[ 1 ] EASY_MODE (기본 이차식)</button>
-        <button class="mode-btn normal" onclick="startGame('normal')">[ 2 ] NORMAL_MODE (공통인수+합차)</button>
-        <button class="mode-btn hard" onclick="startGame('hard')">[ 3 ] HARD_MODE (멜빵법 총출동)</button>
+    <div id="start-screen" class="screen">
+        <div class="main-title">FAIRGROUND<br>FACTORIZE</div>
+        <p style="color: #666; margin-bottom: 20px; font-weight: 700;">🎡 난이도를 선택하세요</p>
+        <div class="mode-btn-container">
+            <button class="mode-btn easy" onclick="startGame('easy')">1단계: 초보자 (기본 이차식)</button>
+            <button class="mode-btn normal" onclick="startGame('normal')">2단계: 숙련자 (계수 있는 이차식)</button>
+            <button class="mode-btn hard" onclick="startGame('hard')">3단계: 고수 (멜빵법 집중 훈련)</button>
+            <button class="mode-btn master" onclick="startGame('master')">4단계: 마스터 (고1 공통인수+합차)</button>
+            <button class="mode-btn grandmaster" onclick="startGame('grandmaster')">5단계: 그랜드마스터 (복이차식 변형)</button>
+        </div>
     </div>
 
-    <div id="game-screen" class="screen">
-        <button class="btn-back" onclick="goBack()">[✖] EXIT</button>
-        <div class="title" id="game-title">execute</div>
-        <div id="problem">Loading...</div>
-        <div class="controls">
-            <button class="btn-next" onclick="generateProblem()">> NEXT_PROB</button>
-            <button class="btn-answer" onclick="toggleAnswer()">> DECRYPT_ANS</button>
-        </div>
-        
-        <div id="answer-area">
-            <div id="type-text">ALGORITHM_TYPE</div>
-            <div id="answer-display">...</div>
-            <div class="note">// WARNING: 항상 최대공약수로 먼저 묶어낼 것!</div>
+    <div id="game-screen">
+        <button class="btn-back" onclick="goBack()">✖ 나가기</button>
+        <div class="screen">
+            <div class="main-title" id="game-title">Loading...</div>
+            <div id="problem">...</div>
+            <div class="controls">
+                <button class="btn-next" onclick="generateProblem()">🎡 다음 문제</button>
+                <button class="btn-answer" onclick="toggleAnswer()">🎫 정답 확인</button>
+            </div>
+            
+            <div id="answer-area">
+                <div id="type-text">유형</div>
+                <div id="answer-display">...</div>
+                <div class="note">* 마법의 주문: 항상 최대공약수로 먼저 묶어낼 것!</div>
+            </div>
         </div>
     </div>
 </div>
@@ -186,7 +212,6 @@
     let currentType = "";
     let currentDifficulty = "normal";
 
-    // 유클리드 호제법
     function getGCD(a, b) {
         return b ? getGCD(b, a % b) : Math.abs(a);
     }
@@ -195,41 +220,50 @@
         return num > 0 ? `+ ${num}` : `- ${Math.abs(num)}`;
     }
 
-    // 화면 전환 함수
     function startGame(difficulty) {
         currentDifficulty = difficulty;
-        document.getElementById('start-screen').classList.remove('active');
-        document.getElementById('game-screen').classList.add('active');
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
         
-        document.getElementById('game-title').innerText = `factorize --level=${difficulty}`;
+        let levelName = "";
+        switch(difficulty) {
+            case 'easy': levelName = "초보자"; break;
+            case 'normal': levelName = "숙련자"; break;
+            case 'hard': levelName = "고수"; break;
+            case 'master': levelName = "마스터"; break;
+            case 'grandmaster': levelName = "그랜드마스터"; break;
+        }
+        
+        document.getElementById('game-title').innerHTML = `🎡 Level: ${levelName}`;
         generateProblem();
     }
 
     function goBack() {
-        document.getElementById('game-screen').classList.remove('active');
-        document.getElementById('start-screen').classList.add('active');
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('start-screen').style.display = 'block';
     }
 
     function generateProblem() {
         const area = document.getElementById('answer-area');
         area.classList.remove('show'); 
         
-        let k = 1; // 공통인수
-        let type = 1; // 문제 유형
+        let k = 1; 
+        let type = 1; 
         
-        // 난이도에 따른 세팅
         if (currentDifficulty === 'easy') {
-            // 이지 모드: 공통인수 없음, x^2 계수 무조건 1
-            k = 1;
-            type = 1; 
+            k = 1; type = 1; 
         } else if (currentDifficulty === 'normal') {
-            // 노말 모드: 공통인수 가끔 등장, 합차/완제/일반식 혼합 (멜빵법 제외)
-            k = Math.random() > 0.7 ? Math.floor(Math.random() * 2) + 2 : 1;
-            type = Math.floor(Math.random() * 2); // 0 or 1
-        } else {
-            // 하드 모드: 공통인수 자주 등장, 멜빵법 포함 모든 유형
-            k = Math.random() > 0.4 ? Math.floor(Math.random() * 3) + 2 : 1; // 1~4
-            type = Math.floor(Math.random() * 3); // 0, 1, 2
+            k = Math.random() > 0.8 ? 2 : 1; 
+            type = Math.random() > 0.6 ? 1 : 0; 
+        } else if (currentDifficulty === 'hard') {
+            k = Math.random() > 0.6 ? Math.floor(Math.random() * 2) + 2 : 1; 
+            type = 2; 
+        } else if (currentDifficulty === 'master') {
+            k = Math.random() > 0.5 ? Math.floor(Math.random() * 3) + 2 : 1; 
+            type = Math.floor(Math.random() * 2); 
+        } else if (currentDifficulty === 'grandmaster') {
+            k = Math.random() > 0.7 ? 2 : 1; 
+            type = 3; 
         }
         
         let a, b, c, innerAns, typeName;
@@ -249,8 +283,7 @@
         } 
         else if (type === 1) { 
             let n = 0, q = 0;
-            // 이지 모드면 숫자를 좀 더 작게 조절 가능
-            let range = currentDifficulty === 'easy' ? 5 : 10;
+            let range = currentDifficulty === 'easy' ? 6 : 10;
             while(n === 0) n = Math.floor(Math.random() * range) - Math.floor(range/2);
             while(q === 0 || q === n) q = Math.floor(Math.random() * range) - Math.floor(range/2);
             
@@ -258,7 +291,7 @@
             innerAns = `(x ${formatTerm(n)})(x ${formatTerm(q)})`;
             typeName = k > 1 ? `공통인수 ${k} + 기본 이차식` : "기본 이차식 (x² 계수 1)";
         } 
-        else { 
+        else if (type === 2) { 
             let m = Math.floor(Math.random() * 2) + 2; 
             let p = 1; 
             let n = 0, q = 0;
@@ -270,22 +303,45 @@
             
             a = k * m * p; b = k * (m * q + n * p); c = k * n * q;
             innerAns = `(${m}x ${formatTerm(n)})(x ${formatTerm(q)})`;
-            typeName = k > 1 ? `공통인수 ${k} + 멜빵법` : "심화 이차식 (멜빵법)";
+            typeName = k > 1 ? `공통인수 ${k} + 심화 이차식 (멜빵법)` : "심화 이차식 (멜빵법)";
+        }
+        else { 
+            let a_val, b_val;
+            let seed = Math.floor(Math.random() * 3);
+            if (seed === 0) { a_val = 3; b_val = 2; }
+            else if (seed === 1) { a_val = 4; b_val = 2; }
+            else { a_val = 1; b_val = 1; }
+            
+            a = k; 
+            b = k * (2 * a_val - b_val * b_val); 
+            c = k * a_val * a_val; 
+            
+            innerAns = `(x² ${formatTerm(b_val)}x + ${a_val})(x² ${formatTerm(-b_val)}x + ${a_val})`;
+            typeName = k > 1 ? `공통인수 ${k} + 복이차식 완제-합차 변형` : "복이차식 (완제-합차 변형)";
         }
 
-        // 수식 문자열 생성
-        let pStr = (a === 1) ? "x²" : a + "x²";
-        if (b !== 0) {
-            let sign = b > 0 ? " + " : " - ";
-            let val = Math.abs(b) === 1 ? "" : Math.abs(b);
-            pStr += sign + val + "x";
+        let pStr;
+        if (type === 3) { 
+            pStr = (a === 1) ? "x⁴" : a + "x⁴";
+            if (b !== 0) {
+                let sign = b > 0 ? " + " : " - ";
+                let val = Math.abs(b) === 1 ? "" : Math.abs(b);
+                pStr += sign + val + "x²";
+            }
+        } else { 
+            pStr = (a === 1) ? "x²" : a + "x²";
+            if (b !== 0) {
+                let sign = b > 0 ? " + " : " - ";
+                let val = Math.abs(b) === 1 ? "" : Math.abs(b);
+                pStr += sign + val + "x";
+            }
         }
         if (c !== 0) {
             pStr += (c > 0 ? " + " : " - ") + Math.abs(c);
         }
 
         setTimeout(() => {
-            document.getElementById('problem').innerText = pStr;
+            document.getElementById('problem').innerHTML = pStr;
             currentAnswer = (k > 1) ? `${k}${innerAns}` : innerAns;
             currentType = typeName;
         }, 150);
