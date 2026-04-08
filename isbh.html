@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>인수분해 마스터 :: 해커 에디션</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: #0a0e17;
+            --neon-green: #00ff41;
+            --neon-blue: #00e5ff;
+            --neon-red: #ff2a2a;
+            --text-main: #e0e6ed;
+            --border-color: #1a2332;
+        }
+
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            background-color: var(--bg-color); 
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 255, 65, 0.05) 0%, transparent 60%),
+                linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+            background-size: 100vw 100vh, 30px 30px, 30px 30px;
+            color: var(--text-main);
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; margin: 0; 
+            overflow: hidden;
+        }
+        
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* 화면 전환용 클래스 */
+        .screen {
+            display: none;
+            background: var(--card-bg); 
+            border: 1px solid var(--border-color);
+            padding: 50px 40px; 
+            border-radius: 12px; 
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1), inset 0 0 10px rgba(0, 255, 65, 0.05); 
+            text-align: center;
+            animation: glitch-in 0.3s ease-out forwards;
+        }
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes glitch-in {
+            0% { opacity: 0; transform: scale(0.98) translateY(10px); filter: brightness(2); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
+        }
+
+        .title {
+            font-family: 'Fira Code', monospace;
+            color: var(--neon-green);
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+        }
+        .title::before { content: "> root@math:~# "; color: #888; }
+        .title::after { content: "_"; animation: blink 1s infinite; }
+        
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* 난이도 버튼 */
+        .mode-btn {
+            display: block; width: 100%; margin-bottom: 15px;
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 18px; font-size: 1.2rem; font-weight: 700;
+            border-radius: 8px; cursor: pointer; transition: all 0.2s;
+            font-family: 'Fira Code', 'Noto Sans KR', monospace;
+            position: relative;
+            overflow: hidden;
+        }
+        .mode-btn:hover { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+        .mode-btn.easy:hover { color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); }
+        .mode-btn.hard:hover { color: var(--neon-red); border-color: var(--neon-red); box-shadow: 0 0 15px rgba(255, 42, 42, 0.2); }
+
+        /* 수식 영역 */
+        #problem { 
+            font-family: 'Fira Code', monospace;
+            font-size: 3.5rem; 
+            font-weight: 700; 
+            color: #ffffff; 
+            margin: 40px 0; 
+            min-height: 100px; 
+            display: flex; align-items: center; justify-content: center; 
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .controls { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
+            margin-bottom: 20px;
+        }
+
+        button { font-family: 'Fira Code', 'Noto Sans KR', monospace; }
+
+        .btn-next { 
+            background: rgba(0, 255, 65, 0.1); 
+            color: var(--neon-green); 
+            border: 1px solid var(--neon-green);
+            padding: 15px; font-size: 1.1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-next:hover { background: var(--neon-green); color: var(--bg-color); box-shadow: 0 0 15px rgba(0, 255, 65, 0.4); }
+
+        .btn-answer { 
+            background: transparent; color: #8b9bb4; border: 1px solid #2a3441;
+            padding: 15px; font-size: 1.1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-answer:hover { border-color: var(--neon-blue); color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+
+        /* 뒤로가기 (메인 메뉴) */
+        .btn-back {
+            background: none; border: none; color: #666; font-size: 0.9rem;
+            cursor: pointer; position: absolute; top: 15px; right: 20px;
+            transition: color 0.2s;
+        }
+        .btn-back:hover { color: var(--neon-red); }
+
+        /* 정답 영역 */
+        #answer-area { 
+            margin-top: 20px; border-top: 1px dashed var(--border-color); padding-top: 30px; 
+            opacity: 0; transform: translateY(10px); transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        #answer-area.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        #type-text { 
+            display: inline-block; padding: 4px 12px; 
+            background: rgba(0, 229, 255, 0.1); border: 1px solid var(--neon-blue);
+            color: var(--neon-blue); border-radius: 4px; font-size: 0.85rem; margin-bottom: 15px; 
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        
+        #answer-display { 
+            font-family: 'Fira Code', monospace;
+            font-size: 2.5rem; color: var(--neon-green); font-weight: 700; 
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+        
+        .note { color: var(--neon-red); font-size: 0.85rem; margin-top: 15px; opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="start-screen" class="screen active">
+        <div class="title">run init_mode.sh</div>
+        <p style="color: #8b9bb4; margin-bottom: 30px;">Select difficulty level to proceed:</p>
+        <button class="mode-btn easy" onclick="startGame('easy')">[ 1 ] EASY_MODE (기본 이차식)</button>
+        <button class="mode-btn normal" onclick="startGame('normal')">[ 2 ] NORMAL_MODE (공통인수+합차)</button>
+        <button class="mode-btn hard" onclick="startGame('hard')">[ 3 ] HARD_MODE (멜빵법 총출동)</button>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <button class="btn-back" onclick="goBack()">[✖] EXIT</button>
+        <div class="title" id="game-title">execute</div>
+        <div id="problem">Loading...</div>
+        <div class="controls">
+            <button class="btn-next" onclick="generateProblem()">> NEXT_PROB</button>
+            <button class="btn-answer" onclick="toggleAnswer()">> DECRYPT_ANS</button>
+        </div>
+        
+        <div id="answer-area">
+            <div id="type-text">ALGORITHM_TYPE</div>
+            <div id="answer-display">...</div>
+            <div class="note">// WARNING: 항상 최대공약수로 먼저 묶어낼 것!</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentAnswer = "";
+    let currentType = "";
+    let currentDifficulty = "normal";
+
+    // 유클리드 호제법
+    function getGCD(a, b) {
+        return b ? getGCD(b, a % b) : Math.abs(a);
+    }
+
+    function formatTerm(num) {
+        return num > 0 ? `+ ${num}` : `- ${Math.abs(num)}`;
+    }
+
+    // 화면 전환 함수
+    function startGame(difficulty) {
+        currentDifficulty = difficulty;
+        document.getElementById('start-screen').classList.remove('active');
+        document.getElementById('game-screen').classList.add('active');
+        
+        document.getElementById('game-title').innerText = `factorize --level=${difficulty}`;
+        generateProblem();
+    }
+
+    function goBack() {
+        document.getElementById('game-screen').classList.remove('active');
+        document.getElementById('start-screen').classList.add('active');
+    }
+
+    function generateProblem() {
+        const area = document.getElementById('answer-area');
+        area.classList.remove('show'); 
+        
+        let k = 1; // 공통인수
+        let type = 1; // 문제 유형
+        
+        // 난이도에 따른 세팅
+        if (currentDifficulty === 'easy') {
+            // 이지 모드: 공통인수 없음, x^2 계수 무조건 1
+            k = 1;
+            type = 1; 
+        } else if (currentDifficulty === 'normal') {
+            // 노말 모드: 공통인수 가끔 등장, 합차/완제/일반식 혼합 (멜빵법 제외)
+            k = Math.random() > 0.7 ? Math.floor(Math.random() * 2) + 2 : 1;
+            type = Math.floor(Math.random() * 2); // 0 or 1
+        } else {
+            // 하드 모드: 공통인수 자주 등장, 멜빵법 포함 모든 유형
+            k = Math.random() > 0.4 ? Math.floor(Math.random() * 3) + 2 : 1; // 1~4
+            type = Math.floor(Math.random() * 3); // 0, 1, 2
+        }
+        
+        let a, b, c, innerAns, typeName;
+        
+        if (type === 0) { 
+            if (Math.random() > 0.5) { 
+                let r = Math.floor(Math.random() * 9) + 2; 
+                a = k; b = 0; c = -k * (r * r);
+                innerAns = `(x - ${r})(x + ${r})`;
+                typeName = k > 1 ? `공통인수 ${k} + 합차 공식` : "합차 공식";
+            } else { 
+                let r = (Math.floor(Math.random() * 8) + 1) * (Math.random() > 0.5 ? 1 : -1);
+                a = k; b = 2 * k * r; c = k * (r * r);
+                innerAns = `(x ${formatTerm(r)})²`;
+                typeName = k > 1 ? `공통인수 ${k} + 완전제곱식` : "완전제곱식";
+            }
+        } 
+        else if (type === 1) { 
+            let n = 0, q = 0;
+            // 이지 모드면 숫자를 좀 더 작게 조절 가능
+            let range = currentDifficulty === 'easy' ? 5 : 10;
+            while(n === 0) n = Math.floor(Math.random() * range) - Math.floor(range/2);
+            while(q === 0 || q === n) q = Math.floor(Math.random() * range) - Math.floor(range/2);
+            
+            a = k; b = k * (n + q); c = k * (n * q);
+            innerAns = `(x ${formatTerm(n)})(x ${formatTerm(q)})`;
+            typeName = k > 1 ? `공통인수 ${k} + 기본 이차식` : "기본 이차식 (x² 계수 1)";
+        } 
+        else { 
+            let m = Math.floor(Math.random() * 2) + 2; 
+            let p = 1; 
+            let n = 0, q = 0;
+            
+            while(n === 0 || getGCD(m, Math.abs(n)) > 1) {
+                n = Math.floor(Math.random() * 7) - 3;
+            }
+            while(q === 0) q = Math.floor(Math.random() * 7) - 3;
+            
+            a = k * m * p; b = k * (m * q + n * p); c = k * n * q;
+            innerAns = `(${m}x ${formatTerm(n)})(x ${formatTerm(q)})`;
+            typeName = k > 1 ? `공통인수 ${k} + 멜빵법` : "심화 이차식 (멜빵법)";
+        }
+
+        // 수식 문자열 생성
+        let pStr = (a === 1) ? "x²" : a + "x²";
+        if (b !== 0) {
+            let sign = b > 0 ? " + " : " - ";
+            let val = Math.abs(b) === 1 ? "" : Math.abs(b);
+            pStr += sign + val + "x";
+        }
+        if (c !== 0) {
+            pStr += (c > 0 ? " + " : " - ") + Math.abs(c);
+        }
+
+        setTimeout(() => {
+            document.getElementById('problem').innerText = pStr;
+            currentAnswer = (k > 1) ? `${k}${innerAns}` : innerAns;
+            currentType = typeName;
+        }, 150);
+    }
+
+    function toggleAnswer() {
+        const area = document.getElementById('answer-area');
+        if (!area.classList.contains('show')) {
+            document.getElementById('type-text').innerText = currentType;
+            document.getElementById('answer-display').innerText = currentAnswer;
+            area.classList.add('show');
+        } else {
+            area.classList.remove('show');
+        }
+    }
+</script>
+
+</body>
+</html>
